@@ -1,30 +1,39 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useParams,
+  useMatch
+} from 'react-router-dom';
 
 const Menu = ({ anecdotes }) => {
   const padding = {
     paddingRight: 5
   };
   return (
-    <Router>
-      <div>
-        <Link to="/" style={padding}>
-          Anecdotes
-        </Link>
-        <Link to="/create" style={padding}>
-          Create New
-        </Link>
-        <Link to="/about" style={padding}>
-          About
-        </Link>
-      </div>
+    <div>
+      <Link to="/" style={padding}>
+        Anecdotes
+      </Link>
+      <Link to="/create" style={padding}>
+        Create New
+      </Link>
+      <Link to="/about" style={padding}>
+        About
+      </Link>
+    </div>
+  );
+};
 
-      <Routes>
-        <Route path="/" element={<AnecdoteList anecdotes={anecdotes} />} />
-        <Route path="/create" element={<CreateNew />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
-    </Router>
+const Anecdote = ({ anecdote }) => {
+  return (
+    <p>
+      <h2>{anecdote?.content}</h2>
+      <div>has {anecdote?.votes} votes</div>
+      <div>for more info see {anecdote?.info}</div>
+    </p>
   );
 };
 
@@ -33,7 +42,9 @@ const AnecdoteList = ({ anecdotes }) => (
     <h2>Anecdotes</h2>
     <ul>
       {anecdotes.map((anecdote) => (
-        <li key={anecdote.id}>{anecdote.content}</li>
+        <p>
+          <Link to={`/anecdotes/${anecdote.id}`}>{anecdote.content}</Link>
+        </p>
       ))}
     </ul>
   </div>
@@ -159,11 +170,25 @@ const App = () => {
     setAnecdotes(anecdotes.map((a) => (a.id === id ? voted : a)));
   };
 
+  const AnecdoteWrapper = () => {
+    const { id } = useParams();
+    const anecdote = anecdoteById(Number(id));
+    return <Anecdote anecdote={anecdote} />;
+  };
+
   return (
     <div>
       <h1>Software anecdotes</h1>
-      <Menu anecdotes={anecdotes} />
-      <Footer />
+      <Router>
+        <Menu anecdotes={anecdotes} />
+        <Routes>
+          <Route path="/anecdotes/:id" element={<AnecdoteWrapper />} />
+          <Route path="/" element={<AnecdoteList anecdotes={anecdotes} />} />
+          <Route path="/create" element={<CreateNew addNew={addNew} />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+        <Footer />
+      </Router>
     </div>
   );
 };
