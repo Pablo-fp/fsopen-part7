@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Blog from './components/Blog';
 import LoginForm from './components/LoginForm';
@@ -14,15 +14,14 @@ import {
   updateBlog,
   removeBlog
 } from './reducers/blogReducer';
+import { setUser, clearUser } from './reducers/userReducer';
 
 const App = () => {
-  /* States */
-  const [user, setUser] = useState(null);
-
   /* Redux */
   const dispatch = useDispatch();
   const notification = useSelector((state) => state.notification);
   const blogs = useSelector((state) => state.blogs);
+  const user = useSelector((state) => state.user);
 
   /* Refs */
   const createFormRef = useRef();
@@ -35,11 +34,11 @@ const App = () => {
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser');
     if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
+      const localUser = JSON.parse(loggedUserJSON);
+      dispatch(setUser(localUser));
+      blogService.setToken(localUser.token);
     }
-  }, []);
+  }, [dispatch]);
 
   /* Handle */
   const handleLoginSubmit = async ({ username, password }) => {
@@ -47,7 +46,7 @@ const App = () => {
       const user = await loginService.login({ username, password });
       blogService.setToken(user.token);
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
-      setUser(user);
+      dispatch(setUser(user));
     } catch (exception) {
       console.log(exception);
       dispatch(
@@ -140,7 +139,7 @@ const App = () => {
           <p>{user.name} logged-in</p>
           <button
             onClick={() => {
-              setUser(null);
+              dispatch(clearUser());
               window.localStorage.removeItem('loggedBlogappUser');
             }}
           >
