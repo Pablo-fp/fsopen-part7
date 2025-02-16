@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Blog from './components/Blog';
 import LoginForm from './components/LoginForm';
 import Togglable from './components/Togglable';
@@ -6,16 +7,16 @@ import BlogForm from './components/BlogForm';
 import blogService from './services/blogs';
 import loginService from './services/login';
 import Notification from './components/Notification';
+import { setNotificationWithTimeout } from './reducers/notificationReducer';
 
 const App = () => {
   /* States */
   const [blogs, setBlogs] = useState([]);
-
   const [user, setUser] = useState(null);
-  const [notification, setNotification] = useState({
-    type: null,
-    content: null
-  });
+
+  /* Redux */
+  const dispatch = useDispatch();
+  const notification = useSelector((state) => state.notification);
 
   /* Refs */
   const createFormRef = useRef();
@@ -43,11 +44,15 @@ const App = () => {
       setUser(user);
     } catch (exception) {
       console.log(exception);
-      setNotification({
-        type: 'error',
-        content: exception.response.data.error
-      });
-      clearNotification();
+      dispatch(
+        setNotificationWithTimeout(
+          {
+            type: 'error',
+            content: exception.response.data.error
+          },
+          5000
+        )
+      );
     }
   };
 
@@ -55,18 +60,26 @@ const App = () => {
     try {
       const newBlog = await blogService.create(newBlogObj);
       setBlogs(blogs.concat(newBlog));
-      setNotification({
-        type: 'success',
-        content: `a new blog ${newBlog.title} by ${newBlog.author} added`
-      });
-      clearNotification();
+      dispatch(
+        setNotificationWithTimeout(
+          {
+            type: 'success',
+            content: `a new blog ${newBlog.title} by ${newBlog.author} added`
+          },
+          5000
+        )
+      );
     } catch (exception) {
       console.log(exception);
-      setNotification({
-        type: 'error',
-        content: exception.response.data.error
-      });
-      clearNotification();
+      dispatch(
+        setNotificationWithTimeout(
+          {
+            type: 'error',
+            content: exception.response.data.error
+          },
+          5000
+        )
+      );
     }
   };
 
@@ -78,11 +91,15 @@ const App = () => {
       );
     } catch (exception) {
       console.log(exception);
-      setNotification({
-        type: 'error',
-        content: exception.response.data.error
-      });
-      clearNotification();
+      dispatch(
+        setNotificationWithTimeout(
+          {
+            type: 'error',
+            content: exception.response.data.error
+          },
+          5000
+        )
+      );
     }
   };
 
@@ -92,18 +109,16 @@ const App = () => {
       setBlogs(blogs.filter((blog) => blog.id !== blogId));
     } catch (exception) {
       console.log(exception);
-      setNotification({
-        type: 'error',
-        content: exception.response.data.error
-      });
-      clearNotification();
+      dispatch(
+        setNotificationWithTimeout(
+          {
+            type: 'error',
+            content: exception.response.data.error
+          },
+          5000
+        )
+      );
     }
-  };
-
-  const clearNotification = () => {
-    setTimeout(() => {
-      setNotification({ type: null, content: null });
-    }, 5000);
   };
 
   // sort blogs the biggest likes number to the lowest
