@@ -8,23 +8,29 @@ import blogService from './services/blogs';
 import loginService from './services/login';
 import Notification from './components/Notification';
 import { setNotificationWithTimeout } from './reducers/notificationReducer';
+import {
+  initializeBlogs,
+  createBlog,
+  updateBlog,
+  removeBlog
+} from './reducers/blogReducer';
 
 const App = () => {
   /* States */
-  const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
 
   /* Redux */
   const dispatch = useDispatch();
   const notification = useSelector((state) => state.notification);
+  const blogs = useSelector((state) => state.blogs);
 
   /* Refs */
   const createFormRef = useRef();
 
   /* Effects */
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+    dispatch(initializeBlogs());
+  }, [dispatch]);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser');
@@ -58,8 +64,7 @@ const App = () => {
 
   const handleCreateFormBlogSubmit = async (newBlogObj) => {
     try {
-      const newBlog = await blogService.create(newBlogObj);
-      setBlogs(blogs.concat(newBlog));
+      await dispatch(createBlog(newBlogObj));
       dispatch(
         setNotificationWithTimeout(
           {
@@ -86,9 +91,7 @@ const App = () => {
   const handleBlogLike = async (updatedBlogObj) => {
     try {
       const updatedBlog = await blogService.update(updatedBlogObj);
-      setBlogs(
-        blogs.map((blog) => (blog.id === updatedBlog.id ? updatedBlog : blog))
-      );
+      dispatch(updateBlog(updatedBlog));
     } catch (exception) {
       console.log(exception);
       dispatch(
@@ -106,7 +109,7 @@ const App = () => {
   const handleBlogDelete = async (blogId) => {
     try {
       await blogService.remove(blogId);
-      setBlogs(blogs.filter((blog) => blog.id !== blogId));
+      dispatch(removeBlog(blogId));
     } catch (exception) {
       console.log(exception);
       dispatch(
@@ -122,7 +125,7 @@ const App = () => {
   };
 
   // sort blogs the biggest likes number to the lowest
-  const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes);
+  const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes);
 
   return (
     <div>
