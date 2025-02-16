@@ -34,6 +34,7 @@ const App = () => {
     }
   }, []);
 
+  /* Handle */
   const handleLoginSubmit = async ({ username, password }) => {
     try {
       const user = await loginService.login({ username, password });
