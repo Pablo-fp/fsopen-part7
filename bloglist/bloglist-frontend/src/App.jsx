@@ -6,6 +6,7 @@ import LoginForm from './components/LoginForm';
 import Togglable from './components/Togglable';
 import BlogForm from './components/BlogForm';
 import Users from './components/Users';
+import UserDetail from './components/UserDetail';
 import blogService from './services/blogs';
 import loginService from './services/login';
 import Notification from './components/Notification';
@@ -174,6 +175,7 @@ const App = () => {
                 }
               />
               <Route path="/users" element={<Users />} />
+              <Route path="/users/:id" element={<UserDetail />} />
             </Routes>
           </div>
         )}
