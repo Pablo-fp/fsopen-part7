@@ -142,48 +142,65 @@ const App = () => {
 
       <Notification message={notification} />
 
+      <nav
+        style={{
+          display: 'flex',
+          justifyContent: 'left',
+          alignItems: 'center',
+          width: '100%',
+          backgroundColor: '#ddd',
+          borderBottom: '1px solid #ccc',
+          padding: '0.5rem 0'
+        }}
+      >
+        <div>
+          <Link to="/">blogs</Link> | <Link to="/users">users</Link>
+        </div>
+        {user && (
+          <div style={{ marginLeft: '1rem' }}>
+            {user.name} logged-in{' '}
+            <button
+              onClick={() => {
+                dispatch(clearUser());
+                window.localStorage.removeItem('loggedBlogappUser');
+              }}
+            >
+              logout
+            </button>
+          </div>
+        )}
+      </nav>
+
       {user === null ? (
         <LoginForm onLoginFormSubmit={handleLoginSubmit} />
       ) : (
-        <div>
-          <p>{user.name} logged-in</p>
-          <button
-            onClick={() => {
-              dispatch(clearUser());
-              window.localStorage.removeItem('loggedBlogappUser');
-            }}
-          >
-            logout
-          </button>
-          <nav>
-            <Link to="/">blogs</Link> | <Link to="/users">users</Link>
-          </nav>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <Togglable buttonLabel="new blog" ref={createFormRef}>
-                    <BlogForm
-                      onCreateBlogFormSubmit={handleCreateFormBlogSubmit}
-                    />
-                  </Togglable>
-                  {sortedBlogs.map((blog) => (
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Togglable buttonLabel="new blog" ref={createFormRef}>
+                  <BlogForm
+                    onCreateBlogFormSubmit={handleCreateFormBlogSubmit}
+                  />
+                </Togglable>
+                {[...blogs]
+                  .sort((a, b) => b.likes - a.likes)
+                  .map((blog) => (
                     <Blog key={blog.id} blog={blog} />
                   ))}
-                </>
-              }
-            />
-            <Route path="/users" element={<Users />} />
-            <Route path="/users/:id" element={<UserDetail />} />
-            <Route
-              path="/blogs/:id"
-              element={
-                <BlogDetail blog={blogFromRoute} onBlogLike={handleBlogLike} />
-              }
-            />
-          </Routes>
-        </div>
+              </>
+            }
+          />
+          <Route path="/users" element={<Users />} />
+          <Route path="/users/:id" element={<UserDetail />} />
+          <Route
+            path="/blogs/:id"
+            element={
+              <BlogDetail blog={blogFromRoute} onBlogLike={handleBlogLike} />
+            }
+          />
+        </Routes>
       )}
     </div>
   );
