@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import blogService from '../services/blogs';
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper
+} from '@mui/material';
 
 const BlogDetail = ({ blog, onBlogLike }) => {
   if (!blog) return null;
@@ -51,11 +60,25 @@ const BlogDetail = ({ blog, onBlogLike }) => {
   return (
     <div>
       <h1>{blog.title}</h1>
-      <div>{blog.url}</div>
-      <div>
-        {blog.likes} likes <button onClick={handleLikeClick}>like</button>
-      </div>
-      <div>Added by {blog.user.username}</div>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableBody>
+            <TableRow key={blog.id}>{blog.url}</TableRow>
+            <TableRow key={blog.id}>
+              {blog.likes} likes{' '}
+              <Button
+                variant="contained"
+                size="small"
+                color="white"
+                onClick={handleLikeClick}
+              >
+                like
+              </Button>
+            </TableRow>
+            <TableRow key={blog.id}>Added by {blog.user.username}</TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
       <h3>Comments</h3>
       <form onSubmit={handleCommentSubmit}>
         <input
@@ -64,7 +87,9 @@ const BlogDetail = ({ blog, onBlogLike }) => {
           onChange={({ target }) => setCommentText(target.value)}
           placeholder="Write a comment..."
         />
-        <button type="submit">Add Comment</button>
+        <Button variant="contained" size="small" color="white" type="submit">
+          Add Comment
+        </Button>
       </form>
       <ul>
         {comments.map((comment) => (

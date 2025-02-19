@@ -19,6 +19,15 @@ import {
   removeBlog
 } from './reducers/blogReducer';
 import { setUser, clearUser } from './reducers/userReducer';
+import {
+  Container,
+  Table,
+  TableBody,
+  TableContainer,
+  Paper,
+  TableRow,
+  Button
+} from '@mui/material';
 
 const App = () => {
   /* Redux */
@@ -137,7 +146,7 @@ const App = () => {
     : null;
 
   return (
-    <div>
+    <Container>
       <h1>Blogs</h1>
 
       <Notification message={notification} />
@@ -159,14 +168,17 @@ const App = () => {
         {user && (
           <div style={{ marginLeft: '1rem' }}>
             {user.name} logged-in{' '}
-            <button
+            <Button
+              variant="contained"
+              size="small"
+              color="red"
               onClick={() => {
                 dispatch(clearUser());
                 window.localStorage.removeItem('loggedBlogappUser');
               }}
             >
               logout
-            </button>
+            </Button>
           </div>
         )}
       </nav>
@@ -184,15 +196,20 @@ const App = () => {
                     onCreateBlogFormSubmit={handleCreateFormBlogSubmit}
                   />
                 </Togglable>
-                {[...blogs]
-                  .sort((a, b) => b.likes - a.likes)
-                  .map((blog) => (
-                    <Blog
-                      key={blog.id}
-                      blog={blog}
-                      refreshBlogs={handleBlogDelete}
-                    />
-                  ))}
+
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableBody>
+                      {[...blogs]
+                        .sort((a, b) => b.likes - a.likes)
+                        .map((blog) => (
+                          <TableRow key={blog.id}>
+                            <Blog blog={blog} refreshBlogs={handleBlogDelete} />
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </>
             }
           />
@@ -206,7 +223,7 @@ const App = () => {
           />
         </Routes>
       )}
-    </div>
+    </Container>
   );
 };
 

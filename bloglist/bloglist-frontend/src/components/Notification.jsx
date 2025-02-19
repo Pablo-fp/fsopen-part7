@@ -1,12 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Alert } from '@mui/material';
 
 const Notification = ({ message }) => {
   if (!message || !message.type || !message.content) {
     return null; // Return null if there's no valid message
   }
 
-  return <div className={message.type}>{message.content}</div>;
+  return <Alert severity={message.type}>{message.content}</Alert>;
 };
 
 Notification.propTypes = {
