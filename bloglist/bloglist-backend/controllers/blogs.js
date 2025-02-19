@@ -1,6 +1,7 @@
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
 const User = require('../models/user');
+const Comment = require('../models/comment');
 const jwt = require('jsonwebtoken');
 
 const getTokenFrom = (request) => {
@@ -12,18 +13,19 @@ const getTokenFrom = (request) => {
 };
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({}).populate('user', {
-    username: 1,
-    name: 1,
-    id: 1
-  });
-  response.status(200).json(blogs);
+  const blogs = await Blog.find({})
+    .populate('user', { username: 1, name: 1, id: 1 })
+    .populate('comments', { content: 1, _id: 1 });
+  response.status(200).json(blogs.map((blog) => blog.toJSON()));
 });
 
 blogsRouter.get('/:id', async (request, response) => {
-  const blog = await Blog.findById(request.params.id);
+  const blog = await Blog.findById(request.params.id).populate('comments', {
+    content: 1,
+    _id: 1
+  });
   if (blog) {
-    response.status(200).json(blog);
+    response.status(200).json(blog.toJSON());
   } else {
     response.status(404).end();
   }
@@ -93,5 +95,69 @@ blogsRouter.put('/:id', async (request, response) => {
     });
   }
 });
+
+blogsRouter.post('/:id/comments', async (request, response, next) => {
+  try {
+    const { content } = request.body;
+    if (!content) {
+      return response.status(400).json({ error: 'missing content' });
+    }
+
+    const blog = await Blog.findById(request.params.id);
+    if (!blog) {
+      return response.status(404).json({ error: 'blog not found' });
+    }
+
+    const comment = new Comment({
+      content,
+      blog: blog._id
+    });
+
+    const savedComment = await comment.save();
+
+    // Add the comment's id to the blog's comments array.
+    blog.comments = blog.comments.concat(savedComment._id);
+    await blog.save();
+
+    response.status(201).json(savedComment.toJSON());
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Add route to handle posting comments
+blogsRouter.delete(
+  '/:id/comments/:commentId',
+  async (request, response, next) => {
+    try {
+      const { id, commentId } = request.params;
+      console.log('DELETE comment route hit:', request.params);
+
+      // Find the blog.
+      const blog = await Blog.findById(id);
+      if (!blog) {
+        return response.status(404).json({ error: 'blog not found' });
+      }
+
+      // Ensure the comment exists.
+      const comment = await Comment.findById(commentId);
+      if (!comment) {
+        return response.status(404).json({ error: 'comment not found' });
+      }
+
+      // Remove the comment from the blog's comments array manually.
+      blog.comments = blog.comments.filter((c) => c.toString() !== commentId);
+      await blog.save();
+
+      // Remove the comment from the Comment collection.
+      await Comment.findByIdAndDelete(commentId);
+
+      response.status(204).end();
+    } catch (error) {
+      console.error('Error in DELETE comment route:', error);
+      next(error);
+    }
+  }
+);
 
 module.exports = blogsRouter;

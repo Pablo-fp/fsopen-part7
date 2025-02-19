@@ -19,15 +19,15 @@ const blogSchema = new mongoose.Schema({
 
 blogSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    console.log('Transforming document:', returnedObject);
-
+    // Remove the debugging log to avoid side-effects
+    // console.log('Transforming document:', returnedObject);
     if (returnedObject._id) {
       returnedObject.id = returnedObject._id.toString();
       delete returnedObject._id;
     }
     delete returnedObject.__v;
 
-    // Prevent circular reference
+    // Prevent circular reference in the user field
     if (returnedObject.user) {
       returnedObject.user = {
         id: returnedObject.user.id,
@@ -35,6 +35,7 @@ blogSchema.set('toJSON', {
         name: returnedObject.user.name
       };
     }
+    return returnedObject;
   }
 });
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-const baseUrl = '/api/blogs';
+const baseUrl = import.meta.env.VITE_API_URL || '/api/blogs';
 
 let token = null;
 
@@ -9,6 +9,11 @@ const setToken = (newToken) => {
 
 const getAll = async () => {
   const response = await axios.get(baseUrl);
+  return response.data;
+};
+
+const getOne = async (id) => {
+  const response = await axios.get(`${baseUrl}/${id}`);
   return response.data;
 };
 
@@ -35,4 +40,37 @@ const remove = async (id) => {
   return response.data;
 };
 
-export default { getAll, create, update, setToken, remove };
+const addComment = async (id, commentObject) => {
+  const config = {
+    headers: { Authorization: token }
+  };
+
+  const response = await axios.post(
+    `${baseUrl}/${id}/comments`,
+    commentObject,
+    config
+  );
+  return response.data;
+};
+
+const deleteComment = async (blogId, commentId) => {
+  const config = {
+    headers: { Authorization: token }
+  };
+  const response = await axios.delete(
+    `${baseUrl}/${blogId}/comments/${commentId}`,
+    config
+  );
+  return response.data;
+};
+
+export default {
+  getAll,
+  getOne,
+  create,
+  update,
+  setToken,
+  remove,
+  addComment,
+  deleteComment
+};
